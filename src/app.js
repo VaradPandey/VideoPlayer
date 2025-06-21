@@ -4,7 +4,7 @@ import cookieParser from "cookie-parser";
 
 const app=express();
 
-//app.use() for configuration and setting uup middleware
+//app.use() for configuration and setting up middleware
 app.use(cors({
     origin: process.env.CORS_ORIGIN,
     credentials: true

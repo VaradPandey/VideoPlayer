@@ -6,12 +6,13 @@ dotenv.config({
 });
 const port=process.env.PORT || 8000;
 
-connectDB()
-.then(()=>{ 
-    app.listen(port,()=>{
+
+connectDB() //You call connectDB() which returns a promise.
+.then(()=>{  
+    app.listen(port,()=>{ //If the DB connects successfully, you start the server using app.listen(port).
         console.log(`listening at port: ${port}`);
     });
 })
-.catch((error)=>{
+.catch((error)=>{ //If DB connection fails, the .catch() block logs the error and the server doesn’t start.
     console.log("Error: ",error);
 });
