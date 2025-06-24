@@ -27,4 +27,8 @@ app.use(express.static("public"));  //public is folder name for assests
 //setting up cookieparser
 app.use(cookieParser());
 
+//router import
+import userRouter from "./routes/user.routes.js";
+app.use('/api/v1/users',userRouter);
+
 export {app};
