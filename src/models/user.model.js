@@ -52,7 +52,7 @@ userSchema.pre("save",async function(next){ //no arrow function because they don
     //hook runs only if password change else exit immediately
     if(!this.isModified("password")) return next();
 
-    this.password=bcrypt.hash(this.password,10);
+    this.password=await bcrypt.hash(this.password,10);
     next();
 });
 
