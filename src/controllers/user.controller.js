@@ -4,6 +4,24 @@ import {User} from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
+const generateAccessAndRefreshToken=async(userId)=>{
+    try{
+        const user=await User.findById(userId);
+        const accessToken=generateAccessToken();
+        const refreshToken=generateRefreshToken();
+
+        user.refreshToken=refreshToken;
+        await user.save({
+            validateBeforeSave: false,
+        });
+
+        return {accessToken,refreshToken};
+    }
+    catch(error){
+        throw new ApiError(500,"Unable to generate access token");
+    }
+}
+
 //A controller is just a function that handles what should happen when someone makes a request to backend.
 
 //A function that handles the logic for a route
@@ -80,4 +98,50 @@ const registerUser=asyncHandler(async (req,res)=>{
 
 });
 
-export {registerUser}
+const loginUser=asyncHandler(async(req,res)=>{
+    //1) get user data
+    const {email,username,password}=req.body;
+
+    //2) check if values are given
+    if(!username || !email){
+        throw new ApiError(400,"Either username or email is required");
+    }
+
+    //3) Check if user exists and store it
+    const user=await User.findOne({
+        $or: [{username,email}]
+    });
+    if(!user){
+        throw new ApiError(404,"User does not exist");
+    }
+
+    //4) Check Password
+    const isPasswordValid=await user.isPasswordCorrect(password);
+    if(!isPasswordValid){
+        throw new ApiError(401,"Password Incorrect");
+    }
+
+    //5) Generate Tokens
+    const {accessToken,refreshToken}=await generateAccessAndRefreshToken(user._id);
+
+    const loggedInUser=await User.findById(user._id).select("-password -refreshToken"); 
+
+    const options={
+        httpOnly: true,
+        secure: true,
+    }
+
+    return res.status(200)
+    .cookie("accessToken",accessToken,options)
+    .cookie("refreshToken",refreshToken,options)
+    .json(
+        new ApiResponse(200,
+            {
+                user: loggedInUser,accessToken,refreshToken
+            },
+            "User Logged In Successfully"
+        )
+    );
+});
+
+export {registerUser,loginUser}
