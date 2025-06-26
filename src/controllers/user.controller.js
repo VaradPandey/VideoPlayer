@@ -126,11 +126,12 @@ const loginUser=asyncHandler(async(req,res)=>{
 
     const loggedInUser=await User.findById(user._id).select("-password -refreshToken"); 
 
-    const options={
+    const options={ //enables cookie manage by server only
         httpOnly: true,
         secure: true,
     }
 
+    //6) Generate Response
     return res.status(200)
     .cookie("accessToken",accessToken,options)
     .cookie("refreshToken",refreshToken,options)
@@ -142,6 +143,10 @@ const loginUser=asyncHandler(async(req,res)=>{
             "User Logged In Successfully"
         )
     );
+});
+
+const logoutUser=asyncHandler(async(req,res)=>{
+    
 });
 
 export {registerUser,loginUser}
