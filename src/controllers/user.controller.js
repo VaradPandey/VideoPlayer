@@ -20,7 +20,7 @@ const registerUser=asyncHandler(async (req,res)=>{
 
     //3) Check if user already exists
     //store the first user object that matches either the username or the email
-    const existedUser=User.findOne({
+    const existedUser=await User.findOne({
         //$ sign gives possible operators
         $or: [{username},{email}],
     });
@@ -37,7 +37,12 @@ const registerUser=asyncHandler(async (req,res)=>{
     //4) check for avatar(compulsary) and images
     //.files given by multer
     const avatarLocalPath=req.files?.avatar[0]?.path; //avatar[0] because first entry is the object
-    const coverImageLocalPath=req.files?.coverImage[0]?.path;
+    
+    //prevent error from empty coverImage
+    let coverImageLocalPath;
+    if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length>0){
+        coverImageLocalPath=req.files.coverImage[0].path
+    }
 
     if(!avatarLocalPath){
         throw new ApiError(400,"Avatar image is required");
@@ -45,16 +50,16 @@ const registerUser=asyncHandler(async (req,res)=>{
 
     //5) Upload to cloudinary
     const avatar=await uploadOnCloudinary(avatarLocalPath);
-    const coverImage=uploadOnCloudinary(coverImageLocalPath);
+    const coverImage=await uploadOnCloudinary(coverImageLocalPath);
 
     if(!avatar){
         throw new ApiError(400,"Avatar image is required");
     }
 
     //6) Create User object in db
-    User.create({
-        fullName,
-        avatar: avatar.url,
+    const user=await User.create({
+        fullName,  //When key name = variable name use directly
+        avatar: avatar.url, //If we want to assign something custom, or use a nested value, or rename it
         coverImage: coverImage?.url||"",
         email,
         password,
