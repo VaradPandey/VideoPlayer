@@ -7,8 +7,8 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 const generateAccessAndRefreshToken=async(userId)=>{
     try{
         const user=await User.findById(userId);
-        const accessToken=generateAccessToken();
-        const refreshToken=generateRefreshToken();
+        const accessToken=user.generateAccessToken();
+        const refreshToken=user.generateRefreshToken();
 
         user.refreshToken=refreshToken;
         await user.save({
@@ -103,7 +103,7 @@ const loginUser=asyncHandler(async(req,res)=>{
     const {email,username,password}=req.body;
 
     //2) check if values are given
-    if(!username || !email){
+    if(!username && !email){
         throw new ApiError(400,"Either username or email is required");
     }
 
@@ -146,7 +146,28 @@ const loginUser=asyncHandler(async(req,res)=>{
 });
 
 const logoutUser=asyncHandler(async(req,res)=>{
-    
+    await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $set: {
+                refreshToken: undefined,
+            }
+        },
+        {
+            new: true,
+        }
+    )
+
+    const options={ //enables cookie manage by server only
+        httpOnly: true,
+        secure: true,
+    }
+
+    return res
+    .status(200)
+    .clearCookie("accessToken",options)
+    .clearCookie("refreshToken",options)
+    .json(new ApiResponse(200,{},"User Loggoed Out"));
 });
 
-export {registerUser,loginUser}
+export {registerUser,loginUser,logoutUser}
