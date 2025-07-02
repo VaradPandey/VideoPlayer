@@ -62,7 +62,7 @@ userSchema.methods.isPasswordCorrect=async function(password){
 }
 userSchema.methods.generateAccessToken=function(){ //Creates a short-term token
     //jwt.sign(payload(information to store in token), secretKey, options)
-    jwt.sign( //Stores user info securely inside the token
+    return jwt.sign( //Stores user info securely inside the token
         {
             _id: this._id,
             email: this.email,
@@ -76,7 +76,7 @@ userSchema.methods.generateAccessToken=function(){ //Creates a short-term token
     )   
 };
 userSchema.methods.generateRefreshToken=function(){ //Creates a long-term token
-        jwt.sign( //Helps user stay logged in after access token expires
+        return jwt.sign( //Helps user stay logged in after access token expires
         {
             _id: this._id,
         },

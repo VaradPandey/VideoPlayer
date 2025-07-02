@@ -128,7 +128,7 @@ const loginUser=asyncHandler(async(req,res)=>{
 
     const options={ //enables cookie manage by server only
         httpOnly: true,
-        secure: true,
+        secure: false,
     }
 
     //6) Generate Response
@@ -160,7 +160,7 @@ const logoutUser=asyncHandler(async(req,res)=>{
 
     const options={ //enables cookie manage by server only
         httpOnly: true,
-        secure: true,
+        secure: false,
     }
 
     return res
